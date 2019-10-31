@@ -1,9 +1,9 @@
 //*****************************************************
 //
-// Exemplo3D.cpp
-// Um programa OpenGL simples que abre uma janela GLUT
-// e desenha um cubo para exemplificar a visualização
-// de objetos 3D utilizando a projeção perspectiva.
+// CasaComTransRotEsc.cpp
+// Um programa OpenGL simples que abre uma janela GLUT,
+// translada, rotaciona e troca a escala de um casa para
+// depois desenha-la.
 //
 // Marcelo Cohen e Isabel H. Manssour
 // Este código acompanha o livro
@@ -14,87 +14,102 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <GL/glut.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
+void DesenhaBracos(void) {}
 
-GLfloat fAspect;
+void DesenhaTronco(void) {}
 
-void DesenhaCabeca()
+void DesenhaCabeca(void)
 {
+    float ang;
+    float numVertices = 20;
+    glColor3f(0.0f, 0.0f, 1.0f);
 
+
+    glBegin(GL_LINE_LOOP);
+    for(ang=0; ang<2*M_PI; ang+=M_PI/numVertices)
+        glVertex2f(20*cos(ang),20*sin(ang));
+    glEnd();
+    glFlush();
 }
 
-void DesenhaTorax()
-{
-
-}
-
-void DesenhaBracos()
-{
-
-}
-
-void DesenhaPernas()
-{
-
-}
-
-
+void DesenhaPernas(void) {}
 
 // Função callback de redesenho da janela de visualização
 void Desenha(void)
 {
+    // Muda para o sistema de coordenadas do modelo
+    glMatrixMode(GL_MODELVIEW);
+    // Inicializa a matriz de transformação corrente
+    glLoadIdentity();
+
     // Limpa a janela de visualização com a cor
     // de fundo definida previamente
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /**
-    *   chama as funções de desenho
-    */
+    DesenhaCabeca();
+    DesenhaTronco();
+    DesenhaBracos();
+    DesenhaPernas();
+
     // Executa os comandos OpenGL
     glFlush();
-}
-
-
-// Função usada para especificar o volume de visualização
-void EspecificaParametrosVisualizacao(void)
-{
-    // Especifica sistema de coordenadas de projeção
-    glMatrixMode(GL_PROJECTION);
-    // Inicializa sistema de coordenadas de projeção
-    glLoadIdentity();
-
-    // Especifica a projeção perspectiva(angulo,aspecto,zMin,zMax)
-    gluPerspective(50,fAspect, 0.5, 200);
-
-    // Especifica sistema de coordenadas do modelo
-    glMatrixMode(GL_MODELVIEW);
-    // Inicializa sistema de coordenadas do modelo
-    glLoadIdentity();
-
-    // Especifica posição do observador e do alvo
-    gluLookAt(20, 40, 100, 0, 0, 0, 0, 1, 0);
 }
 
 // Função callback chamada quando o tamanho da janela é alterado
 void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 {
-    // Para previnir uma divisão por zero
-    if ( h == 0 )
+    GLsizei largura, altura;
+
+    // Evita a divisao por zero
+    if(h == 0)
         h = 1;
 
-    // Especifica as dimensões da viewport
-    glViewport(0, 0, w, h);
+    // Atualiza as variáveis
+    largura = w;
+    altura = h;s
 
-    // Calcula a correção de aspecto
-    fAspect = (GLfloat)w/(GLfloat)h;
+    // Especifica as dimensões da Viewport
+    glViewport(largura/2, altura/2, largura, altura);
 
-    EspecificaParametrosVisualizacao();
+    // Inicializa o sistema de coordenadas
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    // Estabelece a janela de seleção (esquerda, direita, inferior,
+    // superior) mantendo a proporção com a janela de visualização
+    if (largura <= altura)
+        gluOrtho2D (-40.0f, 40.0f, -40.0f*altura/largura, 40.0f*altura/largura);
+    else
+        gluOrtho2D (-40.0f*largura/altura, 40.0f*largura/altura, -40.0f, 40.0f);
 }
 
+// Função callback chamada para gerenciar eventos de teclas
+void Teclado (unsigned char key, int x, int y)
+{
+    if (key == 27)
+        exit(0);
+}
+
+// Função responsável por inicializar parâmetros e variáveis
+void Inicializa (void)
+{
+    // Define a cor de fundo da janela de visualização como branca
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+}
 void TeclasEspeciais(int key,int x,int y)
 {
     switch(key)
     {
+    case GLUT_KEY_PAGE_UP:
+        Desenha();
+        break;
+    case GLUT_KEY_PAGE_DOWN:
+        Desenha();
+        break;
     case GLUT_KEY_RIGHT:
         Desenha();
         break;
@@ -116,21 +131,6 @@ void TeclasEspeciais(int key,int x,int y)
     }
 }
 
-// Função callback chamada para gerenciar eventos de teclas
-void Teclado (unsigned char key, int x, int y)
-{
-    if (key == 27)
-        exit(0);
-}
-
-// Função responsável por inicializar parâmetros e variáveis
-void Inicializa (void)
-{
-    // Define a cor de fundo da janela de visualização como branca
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glLineWidth(2.0);
-}
-
 // Programa Principal
 int main(void)
 {
@@ -144,7 +144,7 @@ int main(void)
     glutInitWindowSize(450,450);
 
     // Cria a janela passando como argumento o título da mesma
-    glutCreateWindow("Desenho de um cubo");
+    glutCreateWindow("Trabalho em grupo");
 
     // Registra a função callback de redesenho da janela de visualização
     glutDisplayFunc(Desenha);
@@ -157,8 +157,6 @@ int main(void)
 
     // Chama a função responsável por fazer as inicializações
     Inicializa();
-
-    // registrando a funcao para as teclas especias
     glutSpecialFunc(TeclasEspeciais);
 
     // Inicia o processamento e aguarda interações do usuário
