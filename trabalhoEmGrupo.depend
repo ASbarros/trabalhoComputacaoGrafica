@@ -1,0 +1,9 @@
+# depslib dependency file v1.0
+1572886779 source:d:\escola\sergio\6 periodo\trabalhocomputacaografica\main.c
+	<windows.h>
+	<stdlib.h>
+	<GL/glut.h>
+	<stdio.h>
+	<stdlib.h>
+	<math.h>
+
