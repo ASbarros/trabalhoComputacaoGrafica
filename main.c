@@ -1,4 +1,3 @@
-
 ///    glutTimerFunc()
 ///    animacao
 
@@ -9,20 +8,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-float BracoEsquerdoY = 0, BracoDireitoY = 0, PernaDireitaX = 4 , PernaEsquerdaX = -4 ;
+float BracoEsquerdoY = 0, BracoDireitoY = 0, BracoEsquerdoX = -4, BracoDireitoX = 4 ;
+float BracoPasso = 0, estadoBraco = 0;
+float  PernaDireitaX = 4, PernaEsquerdaX = -4 ;
+float tamanhoPasso = 0, estadoPasso = 0;
+float estadoCorpo = 0, limiteCorpo = 0;
+float trans = 0, rotat=0;
 
-void DesenhaBracoEsquerdo(void) {
-   glBegin(GL_LINES);
-   glVertex2d(0,6);
-   glVertex2d(4,BracoEsquerdoY);
-   glEnd();
+void DesenhaBracoEsquerdo(void)
+{
+    glBegin(GL_LINES);
+    glVertex2d(0,6);
+    glVertex2d(BracoEsquerdoX,BracoEsquerdoY);
+    glEnd();
 }
 
-void DesenhaBracoDireito(void){
-       glBegin(GL_LINES);
-   glVertex2d(0,6);
-   glVertex2d(-4,BracoDireitoY);
-   glEnd();
+void DesenhaBracoDireito(void)
+{
+    glBegin(GL_LINES);
+    glVertex2d(0,6);
+    glVertex2d(BracoDireitoX,BracoDireitoY);
+    glEnd();
 }
 
 void DesenhaTronco(void)
@@ -64,30 +70,68 @@ void DesenhaPernaEsquerda(void)
     glEnd();
 }
 
+void DesenhaArvore(void)
+{
+    float ang;
+    float numVertices = 20;
+    glColor3f(0.0f, 1.0f, 0.0f);
+
+    glBegin(GL_LINE_LOOP);
+    for(ang=0; ang<2*M_PI; ang+=M_PI/numVertices)
+        glVertex2f(4*cos(ang) + 30, 3.5*sin(ang) +15);
+    glEnd();
+
+
+    glColor3f(0.9f, 0.64f, 0.0f);
+    glBegin(GL_LINES);
+    glVertex2d(30,11);
+    glVertex2d(30,-10);
+    glEnd();
+
+    //glFlush();
+}
+
+
+void DesenhaChao(void)
+{
+
+    glColor3f(0.0f, 0.0f, 0.0f);
+
+    glBegin(GL_LINES);
+    glVertex2d(100,-10);
+    glVertex2d(-100,-10);
+    glEnd();
+
+
+}
+
 // Função callback de redesenho da janela de visualização
 void Desenha(void)
 {
     // Muda para o sistema de coordenadas do modelo
     glMatrixMode(GL_MODELVIEW);
     // Inicializa a matriz de transformação corrente
-    glLoadIdentity();
+    //glLoadIdentity();
 
     // Limpa a janela de visualização com a cor
     // de fundo definida previamente
     glClear(GL_COLOR_BUFFER_BIT);
 
     glLineWidth(4);
+    glRotated(rotat,0,0,1);
+    DesenhaArvore();
 
+    glPushMatrix();
+        glTranslatef(trans,0,0);
     DesenhaCabeca();
     DesenhaTronco();
-    //glPushMatrix();
-
     DesenhaBracoDireito();
     DesenhaBracoEsquerdo();
-      //  glPopMatrix();
-DesenhaPernaDireita();
+    DesenhaPernaDireita();
     DesenhaPernaEsquerda();
-
+    glPopMatrix();
+    DesenhaChao();
+    rotat = 0;
     // Executa os comandos OpenGL
     glFlush();
 }
@@ -139,31 +183,148 @@ void TeclasEspeciais(int key,int x,int y)
 {
     switch(key)
     {
-    case GLUT_KEY_PAGE_UP:
+    case GLUT_KEY_UP:
         BracoEsquerdoY += 1;
         BracoDireitoY += 1;
         break;
-    case GLUT_KEY_PAGE_DOWN:
+    case GLUT_KEY_DOWN:
         BracoEsquerdoY -= 1;
         BracoDireitoY -= 1;
         break;
     case GLUT_KEY_RIGHT:
-        PernaDireitaX -=1;
+        //while(1)
+//{
+        trans += 0.1;
+
+
+        limiteCorpo += 0.001;
+
+
+        /// Braço
+        if(estadoBraco == 0)
+        {
+            BracoEsquerdoX +=0.5;
+            BracoDireitoX -=0.5;
+            BracoDireitoY -=0.2;
+            BracoEsquerdoY -=0.2;
+            BracoPasso +=1;
+        }
+        else
+        {
+            BracoEsquerdoX -=0.5;
+            BracoDireitoX +=0.5;
+            BracoDireitoY +=0.2;
+            BracoEsquerdoY +=0.2;
+            BracoPasso -=1;
+        }
+
+        /// Perna
+        if(estadoPasso == 0)
+        {
+            PernaEsquerdaX +=1;
+            PernaDireitaX -=1;
+            tamanhoPasso +=1;
+        }
+        else
+        {
+            PernaEsquerdaX -=1;
+            PernaDireitaX +=1;
+            tamanhoPasso -=1;
+        }
+
+        ///Estado Braco
+        if(BracoPasso >= 8)
+        {
+            estadoBraco = 1;
+        }
+        else if (BracoPasso <= 0)
+        {
+            estadoBraco = 0;
+
+        }
+
+        /// Estado Perna
+        if(tamanhoPasso >= 8)
+        {
+            estadoPasso = 1;
+        }
+        else if (tamanhoPasso <= 0)
+        {
+            estadoPasso = 0;
+
+        }
+
+        Desenha();
+        //}
         break;
     case GLUT_KEY_LEFT:
-                PernaEsquerdaX +=1;
+        trans += -0.1;
+
+        /// Braço
+        if(estadoBraco == 0)
+        {
+            BracoEsquerdoX +=0.5;
+            BracoDireitoX -=0.5;
+            BracoDireitoY -=0.2;
+            BracoEsquerdoY -=0.2;
+            BracoPasso +=1;
+        }
+        else
+        {
+            BracoEsquerdoX -=0.5;
+            BracoDireitoX +=0.5;
+            BracoDireitoY +=0.2;
+            BracoEsquerdoY +=0.2;
+            BracoPasso -=1;
+        }
+
+        /// Perna
+        if(estadoPasso == 0)
+        {
+            PernaEsquerdaX +=1;
+            PernaDireitaX -=1;
+            tamanhoPasso +=1;
+        }
+        else
+        {
+            PernaEsquerdaX -=1;
+            PernaDireitaX +=1;
+            tamanhoPasso -=1;
+        }
+
+        ///Estado Braco
+        if(BracoPasso >= 8)
+        {
+            estadoBraco = 1;
+        }
+        else if (BracoPasso <= 0)
+        {
+            estadoBraco = 0;
+
+        }
+
+        /// Estado Perna
+        if(tamanhoPasso >= 8)
+        {
+            estadoPasso = 1;
+        }
+        else if (tamanhoPasso <= 0)
+        {
+            estadoPasso = 0;
+
+        }
+
+        Desenha();
 
         break;
-    case GLUT_KEY_UP:
+    case GLUT_KEY_F1:
+        rotat +=1;
         break;
-    case GLUT_KEY_DOWN:
-        break;
-    case GLUT_KEY_HOME:
-        break;
-    case GLUT_KEY_END:
+    case GLUT_KEY_F2:
+        rotat -=1;
         break;
     }
-            Desenha();
+    Desenha();
 
 }
 
