@@ -14,6 +14,7 @@ float  PernaDireitaX = 4, PernaEsquerdaX = -4 ;
 float tamanhoPasso = 0, estadoPasso = 0;
 float estadoCorpo = 0, limiteCorpo = 0;
 float trans = 0, rotat=0;
+float antiEsquerdo = 0;
 
 void DesenhaBracoEsquerdo(void)
 {
@@ -29,7 +30,10 @@ void DesenhaBracoDireito(void)
     glVertex2d(0,6);
     glVertex2d(BracoDireitoX,BracoDireitoY);
     glEnd();
+
 }
+
+
 
 void DesenhaTronco(void)
 {
@@ -51,6 +55,8 @@ void DesenhaCabeca(void)
     for(ang=0; ang<2*M_PI; ang+=M_PI/numVertices)
         glVertex2f(2*cos(ang), 2*sin(ang) +10);
     glEnd();
+    DesenhaBracoEsquerdo();
+
     //glFlush();
 }
 
@@ -122,11 +128,25 @@ void Desenha(void)
     DesenhaArvore();
 
     glPushMatrix();
-        glTranslatef(trans,0,0);
+    glColor3f(0.0f, 0.0f, 0.0f);
+    glTranslatef(trans,0,0);
     DesenhaCabeca();
     DesenhaTronco();
+
     DesenhaBracoDireito();
+    glPushMatrix();
+    glTranslatef(BracoDireitoX, -6 + BracoDireitoY,0);
+    DesenhaBracoDireito();
+    glPopMatrix();
+
     DesenhaBracoEsquerdo();
+    glPushMatrix();
+        glRotated(antiEsquerdo,1,0,0);
+    glTranslatef(BracoEsquerdoX, -6 + BracoEsquerdoY,0);
+    DesenhaBracoEsquerdo();
+    glPopMatrix();
+
+
     DesenhaPernaDireita();
     DesenhaPernaEsquerda();
     glPopMatrix();
@@ -140,7 +160,6 @@ void Desenha(void)
 void AlteraTamanhoJanela(GLsizei w, GLsizei h)
 {
     GLsizei largura, altura;
-
     // Evita a divisao por zero
     if(h == 0)
         h = 1;
@@ -171,6 +190,19 @@ void Teclado (unsigned char key, int x, int y)
 {
     if (key == 27)
         exit(0);
+
+    if(key == 103)  ///q
+    {
+        antiEsquerdo +=10;
+    }
+
+    if(key == 101)  /// e
+    {
+        antiEsquerdo -=1;
+    }
+
+    Desenha();
+    ///printf("%d", key);
 }
 
 // Função responsável por inicializar parâmetros e variáveis
@@ -184,12 +216,12 @@ void TeclasEspeciais(int key,int x,int y)
     switch(key)
     {
     case GLUT_KEY_UP:
-        BracoEsquerdoY += 1;
-        BracoDireitoY += 1;
+        BracoDireitoY +=1;
+        BracoEsquerdoY +=1;
         break;
     case GLUT_KEY_DOWN:
-        BracoEsquerdoY -= 1;
-        BracoDireitoY -= 1;
+        BracoDireitoY -=1;
+        BracoEsquerdoY -=1;
         break;
     case GLUT_KEY_RIGHT:
         //while(1)
@@ -338,7 +370,7 @@ int main(void)
     glutInitWindowPosition(5,5);
 
     // Especifica o tamanho inicial em pixels da janela GLUT
-    glutInitWindowSize(450,450);
+    glutInitWindowSize(1300,600);
 
     // Cria a janela passando como argumento o título da mesma
     glutCreateWindow("Trabalho em grupo");
